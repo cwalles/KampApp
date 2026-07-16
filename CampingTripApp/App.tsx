@@ -16,6 +16,9 @@ export default function App() {
         <Stack.Screen
           name="PackingChecklist"
           component={PackingChecklistScreen}
+          // TODO: replace with a real tripId once a TripHome/trip-selection
+          // screen exists to navigate here with one.
+          initialParams={{ tripId: 'demo-trip' }}
           options={{ title: 'Packing Checklist' }}
         />
         {/* Next screens to add: TripHome, MealPlanner, Ledger, RoutePlanner */}
