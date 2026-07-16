@@ -14,6 +14,22 @@ jest.mock('../hooks/useChecklist', () => ({
   }),
 }));
 
+jest.mock('../hooks/useTrips', () => ({
+  useTrips: () => ({
+    trips: [],
+    loading: false,
+    refresh: jest.fn(),
+  }),
+}));
+
+jest.mock('../hooks/useJoinTrip', () => ({
+  useJoinTrip: () => ({
+    joinTrip: jest.fn(),
+    joining: false,
+    error: null,
+  }),
+}));
+
 jest.mock('../hooks/useTrip', () => ({
   useTrip: () => ({
     trip: {

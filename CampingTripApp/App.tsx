@@ -1,10 +1,12 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import TripListScreen from './screens/trip/TripListScreen';
 import TripHomeScreen from './screens/trip/TripHomeScreen';
 import PackingChecklistScreen from './screens/packing/PackingChecklistScreen';
 
 export type RootStackParamList = {
+  TripList: { familyId: string };
   TripHome: { tripId: string };
   PackingChecklist: { tripId: string };
 };
@@ -16,10 +18,16 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen
+          name="TripList"
+          component={TripListScreen}
+          // TODO: replace with the signed-in user's real familyId once
+          // auth/family setup exists.
+          initialParams={{ familyId: 'demo-family' }}
+          options={{ title: 'My Trips' }}
+        />
+        <Stack.Screen
           name="TripHome"
           component={TripHomeScreen}
-          // TODO: replace with a real tripId once a trip list/join flow exists.
-          initialParams={{ tripId: 'demo-trip' }}
           options={{ title: 'Trip' }}
         />
         <Stack.Screen
