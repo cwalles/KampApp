@@ -18,6 +18,10 @@ jest.mock('../hooks/useJoinTrip', () => ({
   useJoinTrip: jest.fn(),
 }));
 
+jest.mock('../lib/auth', () => ({
+  signOut: jest.fn(),
+}));
+
 const mockUseTrips = useTrips as jest.MockedFunction<typeof useTrips>;
 const mockUseJoinTrip = useJoinTrip as jest.MockedFunction<typeof useJoinTrip>;
 

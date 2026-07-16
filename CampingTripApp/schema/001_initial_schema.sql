@@ -219,6 +219,11 @@ create policy "authenticated users can create a family"
 -- Family members: visible to same-family users
 create policy "view own family members"
   on family_members for select using (is_family_member(family_id));
+-- A user may only ever add themself (not arbitrary other users) as a
+-- family member — covers both creating a new family and, later, being
+-- invited into an existing one.
+create policy "user can add themself as a family member"
+  on family_members for insert with check (auth.uid() = user_id);
 
 -- Trips: visible/editable to trip members only
 create policy "trip members can view trip"

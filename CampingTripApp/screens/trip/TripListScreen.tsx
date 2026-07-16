@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useTrips } from '../../hooks/useTrips';
 import { useJoinTrip } from '../../hooks/useJoinTrip';
+import { signOut } from '../../lib/auth';
 import { Trip } from '../../types/models';
 
 export default function TripListScreen({ route, navigation }: any) {
@@ -82,6 +83,10 @@ export default function TripListScreen({ route, navigation }: any) {
         </Pressable>
         {error && <Text style={styles.error}>{error}</Text>}
       </View>
+
+      <Pressable style={styles.signOutRow} onPress={() => signOut()}>
+        <Text style={styles.signOutText}>Sign out</Text>
+      </Pressable>
     </View>
   );
 }
@@ -120,4 +125,6 @@ const styles = StyleSheet.create({
   },
   joinButtonText: { color: '#fff', fontWeight: '600' },
   error: { color: '#c00', marginTop: 8, fontSize: 12 },
+  signOutRow: { padding: 16, alignItems: 'center' },
+  signOutText: { color: '#999', fontSize: 13 },
 });
