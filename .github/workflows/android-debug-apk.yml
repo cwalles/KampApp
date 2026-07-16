@@ -1,0 +1,74 @@
+name: Android Debug APK
+
+on:
+  push:
+    branches:
+      - main
+      - claude/camping-trip-app-setup-4qhbb4
+    paths:
+      - "CampingTripApp/**"
+      - ".github/workflows/android-debug-apk.yml"
+  workflow_dispatch: {}
+
+jobs:
+  build-debug-apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: CampingTripApp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: CampingTripApp/package-lock.json
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Install required Android SDK packages
+        run: |
+          SDKMANAGER="${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" --install "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006" "cmake;3.22.1"
+
+      # SUPABASE_ANON_KEY is Supabase's publishable client key, safe to embed
+      # in a built app by design (RLS is what actually gates access) -- but
+      # keeping it in repo secrets rather than committed to source still
+      # lets it be swapped (e.g. to point at a different project) without a
+      # code change. Falls back to the .env.example placeholders so the
+      # build still succeeds (against a non-functional backend) if the
+      # secrets haven't been added yet.
+      - name: Write .env
+        run: |
+          {
+            echo "SUPABASE_URL=${{ secrets.SUPABASE_URL || 'https://your-project-ref.supabase.co' }}"
+            echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY || 'your-anon-key' }}"
+          } > .env
+
+      - name: Build debug APK
+        working-directory: CampingTripApp/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a,x86_64
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: camping-trip-app-debug
+          path: CampingTripApp/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
