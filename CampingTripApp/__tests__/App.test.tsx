@@ -9,6 +9,10 @@ import App from '../App';
 import { useSession } from '../hooks/useSession';
 import { useFamily } from '../hooks/useFamily';
 
+jest.mock('@react-native-clipboard/clipboard', () => ({
+  setString: jest.fn(),
+}));
+
 jest.mock('../hooks/useChecklist', () => ({
   useChecklist: () => ({
     items: [],

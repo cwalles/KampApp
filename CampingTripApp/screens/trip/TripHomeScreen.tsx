@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, Pressable, StyleSheet, Share } from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 import { useTrip } from '../../hooks/useTrip';
 import type { Trip } from '../../types/models';
 
@@ -39,6 +40,46 @@ function ModuleLink({
   );
 }
 
+function InviteSection({ trip }: { trip: Trip }) {
+  const [copied, setCopied] = useState(false);
+  const copiedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimeout.current) clearTimeout(copiedTimeout.current);
+    };
+  }, []);
+
+  const handleCopy = () => {
+    Clipboard.setString(trip.invite_code);
+    setCopied(true);
+    copiedTimeout.current = setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShare = () => {
+    Share.share({
+      message: `Join our camping trip "${trip.name}" — use invite code ${trip.invite_code} in the app.`,
+    });
+  };
+
+  return (
+    <View style={styles.inviteSection}>
+      <Text style={styles.inviteLabel}>Invite code</Text>
+      <Text style={styles.inviteCode}>{trip.invite_code}</Text>
+      <View style={styles.inviteActions}>
+        <Pressable style={styles.inviteButton} onPress={handleCopy}>
+          <Text style={styles.inviteButtonText}>
+            {copied ? 'Copied!' : 'Copy'}
+          </Text>
+        </Pressable>
+        <Pressable style={styles.inviteButton} onPress={handleShare}>
+          <Text style={styles.inviteButtonText}>Share</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 export default function TripHomeScreen({ route, navigation }: any) {
   const { tripId } = route.params;
   const { trip, loading } = useTrip(tripId);
@@ -70,6 +111,8 @@ export default function TripHomeScreen({ route, navigation }: any) {
       </Text>
       <Text style={styles.status}>{STATUS_LABEL[trip.status]}</Text>
 
+      <InviteSection trip={trip} />
+
       <View style={styles.modules}>
         <ModuleLink
           label="Packing Checklist"
@@ -92,6 +135,28 @@ const styles = StyleSheet.create({
   destination: { fontSize: 16, color: '#666', marginTop: 4 },
   dates: { fontSize: 14, color: '#666', marginTop: 4 },
   status: { fontSize: 12, fontWeight: '600', color: '#0a7', marginTop: 8 },
+  inviteSection: {
+    marginTop: 20,
+    padding: 16,
+    borderRadius: 8,
+    backgroundColor: '#f2f2f2',
+  },
+  inviteLabel: { fontSize: 12, fontWeight: '600', color: '#666' },
+  inviteCode: {
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: 2,
+    marginTop: 4,
+  },
+  inviteActions: { flexDirection: 'row', marginTop: 12 },
+  inviteButton: {
+    backgroundColor: '#0a7',
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginRight: 12,
+  },
+  inviteButtonText: { color: '#fff', fontWeight: '600' },
   modules: { marginTop: 24 },
   moduleRow: {
     flexDirection: 'row',
