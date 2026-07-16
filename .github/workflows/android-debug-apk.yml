@@ -1,4 +1,4 @@
-name: Android Debug APK
+name: Android APK (sideload test build)
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  build-debug-apk:
+  build-release-apk:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -60,15 +60,22 @@ jobs:
             echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY || 'your-anon-key' }}"
           } > .env
 
-      - name: Build debug APK
+      # A debug-variant APK expects a live Metro server to fetch the JS
+      # bundle from ("Unable to load script" if none is reachable) -- it
+      # isn't meant to run standalone off a device. The release variant
+      # bundles the JS into the APK at build time, so it's the one that
+      # actually works when just sideloaded. It's still signed with the
+      # debug keystore (see app/build.gradle), so this is a sideload-test
+      # build, not a Play Store-ready artifact.
+      - name: Build release APK
         working-directory: CampingTripApp/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a,x86_64
+          ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,x86_64
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v7
         with:
-          name: camping-trip-app-debug
-          path: CampingTripApp/android/app/build/outputs/apk/debug/app-debug.apk
+          name: camping-trip-app-release
+          path: CampingTripApp/android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
